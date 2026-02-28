@@ -1,0 +1,425 @@
+.addition-game-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #87ceeb 0%, #e0f4e0 60%, #8b7355 100%);
+  padding: 0;
+  position: relative;
+}
+
+.addition-game-back-fixed {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  color: #1a202c;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.addition-game-back-fixed:hover {
+  background: #fff;
+}
+
+.addition-game-question-bar {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  background: #2d5a6b;
+  color: #fff;
+  padding: 12px 28px;
+  border-radius: 999px;
+  font-size: 28px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.addition-game-score {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a202c;
+}
+
+.addition-game-arena {
+  position: absolute;
+  inset: 0;
+  top: 70px;
+  cursor: crosshair;
+  overflow: hidden;
+}
+
+.addition-rocks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.addition-rock {
+  position: absolute;
+  width: 72px;
+  height: 44px;
+  background: linear-gradient(145deg, #b0a99e 0%, #8b8580 50%, #6b6560 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  color: #1a1a1a;
+  box-shadow:
+    inset 2px 2px 4px rgba(255, 255, 255, 0.3),
+    3px 4px 8px rgba(0, 0, 0, 0.35);
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.addition-rock.exploded {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.addition-rock.explode-anim {
+  animation: rock-explode 0.5s ease-out forwards;
+}
+
+@keyframes rock-explode {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(2);
+  }
+}
+
+.addition-tank {
+  position: absolute;
+  width: 80px;
+  height: 50px;
+  transition: top 0.05s ease-out;
+  pointer-events: none;
+}
+
+.tank-body {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 70px;
+  height: 38px;
+  background: linear-gradient(180deg, #6b7c5c 0%, #4a5544 30%, #3d4736 100%);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.15),
+    0 4px 10px rgba(0, 0, 0, 0.4);
+  border: 2px solid #2d3329;
+}
+
+.tank-body::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
+  pointer-events: none;
+}
+
+.tank-cannon {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 10px;
+  background: linear-gradient(90deg, #5a5a5a 0%, #3a3a3a 100%);
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.addition-tank.tank-explode {
+  animation: tank-explode 0.5s ease-out forwards;
+}
+
+@keyframes tank-explode {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(2);
+  }
+}
+
+.addition-explosion {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 64px;
+  pointer-events: none;
+  animation: explosion-pop 0.6s ease-out forwards;
+}
+
+@keyframes explosion-pop {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.5);
+  }
+}
+
+.addition-game-hint {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  font-size: 13px;
+  color: #374151;
+  max-width: 90%;
+  text-align: center;
+}
+
+/* Result screen (won) */
+.addition-game-play .addition-game-card {
+  display: none;
+}
+
+.addition-game-result .addition-game-title {
+  margin-top: 8px;
+}
+
+.addition-game-result .addition-game-subtitle {
+  margin-bottom: 12px;
+}
+
+.result-avatar {
+  font-size: 64px;
+  text-align: center;
+  margin: 8px 0;
+}
+
+.result-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.addition-game-result .addition-game-btn.secondary {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.addition-game-result .addition-game-btn.secondary:hover {
+  background: #d1d5db;
+}
+
+.addition-game-page:not(.addition-game-play) .addition-game-question-bar,
+.addition-game-page:not(.addition-game-play) .addition-game-score,
+.addition-game-page:not(.addition-game-play) .addition-game-arena,
+.addition-game-page:not(.addition-game-play) .addition-game-hint,
+.addition-game-page:not(.addition-game-play) .addition-game-back-fixed {
+  display: none;
+}
+
+.addition-game-result {
+  margin: 40px auto;
+  max-width: 420px;
+}
+
+/* Feedback screen (after each round) */
+.addition-feedback-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.addition-feedback-card {
+  width: 100%;
+  max-width: 520px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.2);
+}
+
+.addition-feedback-card .addition-game-back {
+  margin-bottom: 12px;
+}
+
+.addition-feedback-problem {
+  background: #2d5a6b;
+  color: #fff;
+  text-align: center;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.addition-feedback-visual {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.addition-feedback-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.addition-feedback-row-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.addition-feedback-shapes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.addition-feedback-shapes .shape {
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.addition-feedback-shapes .shape.square {
+  width: 20px;
+  height: 20px;
+  background: #3b82f6;
+  border-radius: 2px;
+}
+
+.addition-feedback-shapes .shape.circle {
+  width: 20px;
+  height: 20px;
+  background: #22c55e;
+  border-radius: 50%;
+}
+
+.addition-feedback-dash {
+  width: 1px;
+  align-self: stretch;
+  min-height: 24px;
+  background: repeating-linear-gradient(
+    to bottom,
+    #94a3b8 0,
+    #94a3b8 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  margin: 0 4px;
+}
+
+.addition-feedback-row-label {
+  flex-shrink: 0;
+  min-width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 16px;
+  color: #1e293b;
+}
+
+.addition-feedback-text {
+  color: #b91c1c;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  margin: 0 0 16px;
+  line-height: 1.4;
+}
+
+.addition-feedback-avatar {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 48px;
+  line-height: 1.2;
+}
+
+.addition-feedback-avatar .avatar-cheering,
+.addition-feedback-avatar .avatar-sad {
+  display: inline-block;
+}
+
+.addition-feedback-continue {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 14px;
+  font-size: 18px;
+}
+
+@media (max-width: 640px) {
+  .addition-game-question-bar {
+    font-size: 22px;
+    padding: 10px 20px;
+  }
+
+  .addition-rock {
+    width: 56px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .addition-tank {
+    width: 60px;
+    height: 40px;
+  }
+
+  .tank-body {
+    width: 52px;
+    height: 28px;
+  }
+
+  .tank-cannon {
+    width: 24px;
+    height: 8px;
+  }
+}
