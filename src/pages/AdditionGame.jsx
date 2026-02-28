@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
 import './AdditionGame.css'
 
-const TARGET_SCORE = 5
+const QUESTIONS_TOTAL = 10
 const ROCK_SLOTS_Y = [22, 37, 52, 67] // percent of container height
 const ROCK_START_X = 8
 const TANK_X = 82
@@ -82,7 +83,10 @@ function AdditionGame() {
   const navigate = useNavigate()
   const containerRef = useRef(null)
   const [score, setScore] = useState(0)
-  const [gameState, setGameState] = useState('playing') // 'playing' | 'won' | 'lost'
+  const [roundsCompleted, setRoundsCompleted] = useState(0) // 0..9 while playing; after 10th we go to finished
+  const [gameState, setGameState] = useState('playing') // 'playing' | 'finished'
+  const [finalScore, setFinalScore] = useState(0) // stored when game ends for result screen
+  const [saveError, setSaveError] = useState('')
   const initialQ = useRef(null)
   if (initialQ.current === null) initialQ.current = generateQuestion()
   const [question, setQuestion] = useState(initialQ.current)
@@ -97,14 +101,19 @@ function AdditionGame() {
   )
   const [tankY, setTankY] = useState(50)
   const [explosion, setExplosion] = useState(null) // null | 'rock' | 'tank'
+  const [explosionPosition, setExplosionPosition] = useState(null) // { x, y } in percent
   const [roundBlocked, setRoundBlocked] = useState(false)
   const [showFeedback, setShowFeedback] = useState(false)
   const [feedbackData, setFeedbackData] = useState(null) // { a, b, correct, answerGiven, result: 'correct'|'wrong'|'too_late' }
   const mouseYRef = useRef(50)
+  const tankYRef = useRef(50)
   const questionRef = useRef(question)
   useEffect(() => {
     questionRef.current = question
   }, [question])
+  useEffect(() => {
+    tankYRef.current = tankY
+  }, [tankY])
 
   const startNewRound = useCallback(() => {
     const q = generateQuestion()
@@ -119,6 +128,7 @@ function AdditionGame() {
       }))
     )
     setExplosion(null)
+    setExplosionPosition(null)
     setRoundBlocked(false)
   }, [])
 
@@ -131,8 +141,10 @@ function AdditionGame() {
     const onMove = (e) => {
       const rect = el.getBoundingClientRect()
       const y = ((e.clientY - rect.top) / rect.height) * 100
-      mouseYRef.current = Math.max(5, Math.min(95, y))
-      setTankY(mouseYRef.current)
+      const clamped = Math.max(5, Math.min(95, y))
+      mouseYRef.current = clamped
+      tankYRef.current = clamped
+      setTankY(clamped)
     }
 
     el.addEventListener('mousemove', onMove)
@@ -171,6 +183,7 @@ function AdditionGame() {
 
       if (aimedRock.value === question.correct) {
         setExplosion('rock')
+        setExplosionPosition({ x: aimedRock.x, y: aimedRock.y })
         setScore((s) => s + 1)
         setRocks((prev) =>
           prev.map((r) => (r.id === aimedIndex ? { ...r, exploded: true } : r))
@@ -184,7 +197,7 @@ function AdditionGame() {
         })
       } else {
         setExplosion('tank')
-        setScore((s) => Math.max(-10, s - 1))
+        setExplosionPosition({ x: TANK_X, y: tankY })
         setFeedbackData({
           a: question.a,
           b: question.b,
@@ -214,7 +227,7 @@ function AdditionGame() {
         if (anyHit) {
           setRoundBlocked(true)
           setExplosion('tank')
-          setScore((s) => Math.max(-10, s - 1))
+          setExplosionPosition({ x: TANK_X, y: tankYRef.current })
           const q = questionRef.current
           if (q) {
             setFeedbackData({
@@ -235,16 +248,32 @@ function AdditionGame() {
     return () => clearInterval(id)
   }, [gameState, roundBlocked, startNewRound])
 
-  // Check win
-  useEffect(() => {
-    if (score >= TARGET_SCORE) setGameState('won')
-  }, [score])
-
-  const handleContinueFromFeedback = useCallback(() => {
+  const handleContinueFromFeedback = useCallback(async () => {
+    const nextCompleted = roundsCompleted + 1
     setShowFeedback(false)
     setFeedbackData(null)
+
+    if (nextCompleted >= QUESTIONS_TOTAL) {
+      // Include 10th question: score may already have it (state update) or not (batching). Clamp to 0-10.
+      const withTenth = score + (feedbackData?.result === 'correct' ? 1 : 0)
+      const total = Math.min(QUESTIONS_TOTAL, Math.max(0, withTenth))
+      setFinalScore(total)
+      setGameState('finished')
+      setSaveError('')
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user?.id) {
+        const { error } = await supabase.from('addition_scores').insert({
+          user_id: user.id,
+          score: total,
+          total_questions: QUESTIONS_TOTAL,
+        })
+        if (error) setSaveError(error.message)
+      }
+      return
+    }
+    setRoundsCompleted(nextCompleted)
     startNewRound()
-  }, [startNewRound])
+  }, [startNewRound, roundsCompleted, score, feedbackData?.result])
 
   if (showFeedback && feedbackData) {
     const { a, b, correct, answerGiven, result } = feedbackData
@@ -306,7 +335,7 @@ function AdditionGame() {
     )
   }
 
-  if (gameState === 'won') {
+  if (gameState === 'finished') {
     return (
       <div className="addition-game-page">
         <div className="addition-game-card addition-game-result">
@@ -317,10 +346,11 @@ function AdditionGame() {
           >
             ← Back to Games
           </button>
-          <h1 className="addition-game-title">You won!</h1>
+          <h1 className="addition-game-title">Game complete!</h1>
           <p className="addition-game-subtitle">
-            You reached {TARGET_SCORE} points. Great job!
+            You got {finalScore} out of {QUESTIONS_TOTAL} correct. {finalScore >= 7 ? 'Great job!' : 'Keep practising!'}
           </p>
+          {saveError && <p className="addition-game-error">{saveError}</p>}
           <div className="result-avatar">😄</div>
           <div className="result-actions">
             <button
@@ -328,7 +358,10 @@ function AdditionGame() {
               className="addition-game-btn"
               onClick={() => {
                 setScore(0)
+                setRoundsCompleted(0)
                 setGameState('playing')
+                setFeedbackData(null)
+                setFinalScore(0)
                 startNewRound()
               }}
             >
@@ -361,7 +394,7 @@ function AdditionGame() {
         {question.a} + {question.b}?
       </div>
 
-      <div className="addition-game-score">Score: {score} / {TARGET_SCORE}</div>
+      <div className="addition-game-score">Score: {score} / {QUESTIONS_TOTAL} — Question {roundsCompleted + 1} of {QUESTIONS_TOTAL}</div>
 
       <div className="addition-game-arena" ref={containerRef}>
         <div className="addition-rocks">
@@ -393,14 +426,21 @@ function AdditionGame() {
         </div>
 
         {explosion && (
-          <div className={`addition-explosion ${explosion}`}>
-            {explosion === 'rock' ? '💥' : '💥'}
+          <div
+            className={`addition-explosion ${explosion}`}
+            style={
+              explosionPosition
+                ? { left: `${explosionPosition.x}%`, top: `${explosionPosition.y}%` }
+                : undefined
+            }
+          >
+            💥
           </div>
         )}
       </div>
 
       <p className="addition-game-hint">
-        Move the tank with your mouse and click to shoot the rock with the correct answer. Reach {TARGET_SCORE} points to win. If a rock reaches the tank, you lose a point!
+        Move the tank with your mouse and click to shoot the rock with the correct answer. {QUESTIONS_TOTAL} questions total — 1 point per correct answer. If a rock reaches the tank, no point for that question.
       </p>
     </div>
   )

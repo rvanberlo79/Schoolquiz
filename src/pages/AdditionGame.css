@@ -219,6 +219,12 @@
   margin-bottom: 12px;
 }
 
+.addition-game-error {
+  color: #b91c1c;
+  font-size: 14px;
+  margin: 8px 0;
+}
+
 .result-avatar {
   font-size: 64px;
   text-align: center;

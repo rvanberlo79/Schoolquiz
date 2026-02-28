@@ -4,7 +4,12 @@ import { supabase } from '../lib/supabase'
 import './HangmanMultiplication.css'
 
 const MAX_MISTAKES = 6
-const TARGET_SCORE = 21 // more than 20 points
+const TARGET_SCORE = 15
+
+const CORRECT_MESSAGES = ['Great!', 'Perfect!', 'Go on!', 'You are an expert!', 'You are amazing!', 'Wow!']
+function getRandomCorrectMessage() {
+  return CORRECT_MESSAGES[Math.floor(Math.random() * CORRECT_MESSAGES.length)]
+}
 
 function getRandomQuestion(selectedTables) {
   const table = selectedTables[Math.floor(Math.random() * selectedTables.length)]
@@ -46,7 +51,10 @@ function HangmanMultiplication() {
   const [isFinished, setIsFinished] = useState(false)
   const [didWin, setDidWin] = useState(false)
   const [feedback, setFeedback] = useState('')
+  const [roundFeedback, setRoundFeedback] = useState(null) // { isCorrect, correctAnswer?, message } — show before next question
+  const [pendingUpdate, setPendingUpdate] = useState(null) // { nextScore, nextMistakes } after Continue
   const [userId, setUserId] = useState(null)
+  const [nickname, setNickname] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [topScores, setTopScores] = useState([])
@@ -59,12 +67,16 @@ function HangmanMultiplication() {
   }, [question])
 
   useEffect(() => {
-    const loadUser = async () => {
+    const loadUserAndNickname = async () => {
       const { data } = await supabase.auth.getUser()
-      setUserId(data.user?.id ?? null)
+      const uid = data.user?.id ?? null
+      setUserId(uid)
+      if (!uid) return
+      const { data: profile } = await supabase.from('profiles').select('nickname').eq('id', uid).single()
+      const nick = profile?.nickname?.trim() || localStorage.getItem(`leaderboard_nickname_${uid}`) || ''
+      setNickname(nick || 'Player')
     }
-
-    loadUser()
+    loadUserAndNickname()
   }, [])
 
   const toggleTable = (tableNumber) => {
@@ -135,7 +147,7 @@ function HangmanMultiplication() {
     setIsSaving(false)
   }
 
-  const submitAnswer = async (event) => {
+  const submitAnswer = (event) => {
     event.preventDefault()
     if (!question) return
 
@@ -144,10 +156,32 @@ function HangmanMultiplication() {
     const nextScore = isCorrect ? score + 1 : score
     const nextMistakes = isCorrect ? mistakes : mistakes + 1
 
+    setAnswer('')
+    setPendingUpdate({ nextScore, nextMistakes })
+    setRoundFeedback({
+      isCorrect,
+      correctAnswer: question.correctAnswer,
+      factor1: question.multiplier,
+      factor2: question.table,
+      message: isCorrect ? getRandomCorrectMessage() : null,
+    })
+  }
+
+  // Auto-advance after 2s when answer is correct
+  useEffect(() => {
+    if (!roundFeedback?.isCorrect || !pendingUpdate) return
+    const t = setTimeout(handleContinueAfterFeedback, 500)
+    return () => clearTimeout(t)
+  }, [roundFeedback?.isCorrect, pendingUpdate])
+
+  const handleContinueAfterFeedback = async () => {
+    if (!pendingUpdate) return
+    const { nextScore, nextMistakes } = pendingUpdate
     setScore(nextScore)
     setMistakes(nextMistakes)
-    setFeedback(isCorrect ? 'Correct! +1 point' : `Incorrect. Correct answer: ${question.correctAnswer}`)
-    setAnswer('')
+    setRoundFeedback(null)
+    setPendingUpdate(null)
+    setFeedback('')
 
     if (nextMistakes >= MAX_MISTAKES) {
       setDidWin(false)
@@ -204,6 +238,55 @@ function HangmanMultiplication() {
     )
   }
 
+  if (roundFeedback && pendingUpdate) {
+    const isCorrect = roundFeedback.isCorrect
+    return (
+      <div className="hangman-page">
+        <div className="hangman-card hangman-feedback-card">
+          <div className={`hangman-feedback-emoji ${isCorrect ? 'correct' : 'wrong'}`} aria-hidden>
+            {isCorrect ? '🎉' : '😕'}
+          </div>
+          <p className={`hangman-feedback-message ${isCorrect ? 'correct' : 'wrong'}`}>
+            {isCorrect
+              ? roundFeedback.message
+              : "Unfortunately that's wrong. Here's the correct answer:"}
+          </p>
+          {!isCorrect && roundFeedback.factor1 != null && roundFeedback.factor2 != null && (
+            <div className="mult-visual-wrap">
+              <div className="mult-visual-header">
+                <span className="mult-visual-question">{roundFeedback.factor1} × {roundFeedback.factor2} ?</span>
+                <span className="mult-visual-answer">{roundFeedback.correctAnswer}</span>
+              </div>
+              <div className="mult-visual-rows">
+                {Array.from({ length: roundFeedback.factor1 }, (_, i) => {
+                  const count = i + 1
+                  const cumulative = count * roundFeedback.factor2
+                  const colors = ['#93c5fd', '#86efac', '#d8b4fe', '#fed7aa', '#d1d5db', '#fde68a', '#a5f3fc', '#f9a8d4'] // pastel blue, green, purple, orange, grey, yellow, cyan, pink
+                  return (
+                    <div key={i} className="mult-visual-row">
+                      <div className="mult-visual-squares" style={{ backgroundColor: colors[i % colors.length] }}>
+                        {Array.from({ length: roundFeedback.factor2 }, (_, j) => (
+                          <span key={j} className="mult-visual-square" />
+                        ))}
+                      </div>
+                      <div className="mult-visual-label">{cumulative}</div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+          {isCorrect && <p className="hangman-feedback-auto">Continuing...</p>}
+          {!isCorrect && (
+            <button type="button" className="start-btn" onClick={handleContinueAfterFeedback}>
+              Continue
+            </button>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   if (isFinished) {
     return (
       <div className="hangman-page">
@@ -218,27 +301,16 @@ function HangmanMultiplication() {
           </div>
           <p className="result-text">
             {didWin
-              ? 'Great work! You reached more than 20 points before the hangman was completed.'
+              ? `${nickname || 'You'} has beaten the hangman game and is a professional!`
               : 'The hangman is complete. Better luck next time!'}
           </p>
           {isSaving && <p className="result-status">Saving your score...</p>}
           {saveError && <p className="result-error">Could not save score: {saveError}</p>}
 
-          <h2 className="leaderboard-title">Hangman Leaderboard</h2>
-          {topScores.length === 0 ? (
-            <p className="result-status">No scores yet.</p>
-          ) : (
-            <ol className="leaderboard-list">
-              {topScores.map((entry, index) => (
-                <li key={`${entry.user_id}-${entry.created_at}-${index}`}>
-                  <span>{entry.user_id === userId ? 'You' : `Player ${entry.user_id.slice(0, 6)}`}</span>
-                  <strong>{entry.score} pts {entry.won ? '🏆' : ''}</strong>
-                </li>
-              ))}
-            </ol>
-          )}
-
           <div className="result-actions">
+            <button type="button" className="secondary-btn" onClick={() => navigate('/leaderboard')}>
+              Go to Overall Leaderboard
+            </button>
             <button type="button" className="start-btn" onClick={repeatGame}>
               Repeat Hangman Game
             </button>
@@ -279,7 +351,6 @@ function HangmanMultiplication() {
           </button>
         </form>
 
-        {feedback && <p className="feedback-text">{feedback}</p>}
       </div>
     </div>
   )

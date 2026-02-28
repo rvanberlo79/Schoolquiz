@@ -189,6 +189,123 @@
   margin-top: 14px;
 }
 
+.hangman-feedback-card {
+  text-align: center;
+  padding: 32px 28px;
+}
+
+.hangman-feedback-emoji {
+  font-size: 56px;
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+.hangman-feedback-emoji.correct {
+  animation: feedback-pop 0.4s ease-out;
+}
+
+@keyframes feedback-pop {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.hangman-feedback-message {
+  margin: 0 0 20px;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.hangman-feedback-message.correct {
+  color: #166534;
+}
+
+.hangman-feedback-message.wrong {
+  color: #1f2937;
+}
+
+.hangman-feedback-auto {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.mult-visual-wrap {
+  margin: 20px 0;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  max-width: 360px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.mult-visual-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.mult-visual-question {
+  background: #0d9488;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.mult-visual-answer {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.mult-visual-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mult-visual-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mult-visual-squares {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 2px solid #0f766e;
+  min-height: 36px;
+}
+
+.mult-visual-square {
+  width: 20px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.mult-visual-label {
+  min-width: 44px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 2px solid #0f766e;
+  background: #fff;
+  font-weight: 700;
+  font-size: 16px;
+  text-align: center;
+}
+
 @media (max-width: 640px) {
   .table-selector-grid {
     grid-template-columns: repeat(2, 1fr);

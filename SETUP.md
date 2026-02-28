@@ -26,15 +26,21 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 Replace `your_supabase_project_url` and `your_supabase_anon_key` with the values from your Supabase project.
 
-## 4. Create the profiles table (for nicknames / leaderboard)
+## 4. Create the profiles table (for nicknames, difficulty, leaderboard)
 
-To use **User Settings** (nickname) and show nicknames on the **Leaderboard**, create the `profiles` table once:
+To use **User Settings** (nickname and difficulty level) and show nicknames on the **Leaderboard**, create the `profiles` table once:
 
 1. In Supabase Dashboard go to **SQL Editor** → **New query**
 2. Open the file `supabase/create_profiles_table.sql` in this project, copy all its contents, and paste into the SQL Editor
 3. Click **Run**
 
-After this, saving a nickname in User Settings will work and leaderboard will show nicknames.
+After this, saving a nickname, avatar, and difficulty level in User Settings will work, and the leaderboard will show nicknames. Difficulty level can be used in games via the `useProfile()` hook.
+
+**If you already have the profiles table**, run the migrations in the SQL Editor as needed:
+- `supabase/migrations/20250228000000_add_difficulty_to_profiles.sql` (difficulty_level)
+- `supabase/migrations/20250228100000_add_avatar_to_profiles.sql` (avatar 0–55)
+
+**Avatars:** The User Settings avatar picker offers 3 avatars in `public/avatars/` (avatar-0.png, avatar-1.png, avatar-2.png).
 
 ## 5. Run the Development Server
 

@@ -9,7 +9,7 @@
 
 .settings-card {
   width: 100%;
-  max-width: 440px;
+  max-width: 480px;
   background: #fff;
   border-radius: 16px;
   padding: 28px;
@@ -70,6 +70,22 @@
   box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
 }
 
+.settings-select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 16px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.settings-select:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+}
+
 .settings-btn {
   margin-top: 8px;
   padding: 12px 16px;
@@ -103,4 +119,40 @@
 .settings-loading {
   text-align: center;
   color: #6b7280;
+}
+
+/* Avatar row: 3 options */
+.settings-avatar-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.settings-avatar-cell {
+  width: 80px;
+  height: 80px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 0;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.settings-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.settings-avatar-cell:hover {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.25);
+}
+
+.settings-avatar-cell-selected {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.4);
 }
