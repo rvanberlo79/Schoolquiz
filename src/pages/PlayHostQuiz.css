@@ -1,0 +1,138 @@
+.play-host-quiz-page {
+  min-height: 100vh;
+  background: #f4f7ff;
+  padding: 24px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.play-host-quiz-back {
+  background: none;
+  border: none;
+  color: #4f7cff;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 0 16px;
+  margin: 0;
+}
+
+.play-host-quiz-back:hover {
+  text-decoration: underline;
+}
+
+.play-host-quiz-loading,
+.play-host-quiz-error {
+  margin: 20px 0;
+  color: #6b7280;
+}
+
+.play-host-quiz-progress {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.play-host-quiz-timer {
+  font-size: 14px;
+  font-weight: 600;
+  color: #8b5cf6;
+  margin-bottom: 16px;
+}
+
+.play-host-quiz-question-text {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 20px;
+  line-height: 1.4;
+}
+
+.play-host-quiz-options {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px;
+}
+
+.play-host-quiz-options li {
+  margin-bottom: 10px;
+}
+
+.play-host-quiz-option {
+  display: block;
+  width: 100%;
+  padding: 14px 18px;
+  text-align: left;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.play-host-quiz-option:hover:not(:disabled) {
+  border-color: #8b5cf6;
+  background: #faf5ff;
+}
+
+.play-host-quiz-option.correct {
+  border-color: #10b981;
+  background: #d1fae5;
+}
+
+.play-host-quiz-option.wrong {
+  border-color: #ef4444;
+  background: #fee2e2;
+}
+
+.play-host-quiz-option:disabled {
+  cursor: default;
+}
+
+.play-host-quiz-feedback {
+  margin-top: 20px;
+  padding: 16px;
+  background: #f3f4f6;
+  border-radius: 10px;
+}
+
+.play-host-quiz-feedback p {
+  margin: 0 0 12px;
+  color: #374151;
+}
+
+.play-host-quiz-btn {
+  padding: 12px 20px;
+  background: #8b5cf6;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.play-host-quiz-btn:hover {
+  background: #7c3aed;
+}
+
+.play-host-quiz-finished {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.play-host-quiz-finished-title {
+  font-size: 24px;
+  color: #1f2937;
+  margin: 0 0 16px;
+}
+
+.play-host-quiz-finished-score {
+  font-size: 20px;
+  color: #6b7280;
+  margin: 0 0 24px;
+}
+
+.play-host-quiz-finished .play-host-quiz-btn {
+  display: inline-block;
+}

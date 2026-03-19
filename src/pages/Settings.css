@@ -44,6 +44,46 @@
   text-align: center;
 }
 
+.settings-role-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.settings-role-value {
+  font-weight: 600;
+  color: #374151;
+  font-size: 15px;
+}
+
+.settings-role-hint {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.settings-manage-link-wrap {
+  margin-bottom: 16px;
+}
+
+.settings-manage-link {
+  background: transparent;
+  border: none;
+  color: #4f46e5;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.settings-manage-link:hover {
+  color: #4338ca;
+}
+
 .settings-form {
   display: flex;
   flex-direction: column;

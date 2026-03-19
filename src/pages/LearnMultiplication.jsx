@@ -1,22 +1,24 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useLanguage } from '../context/LanguageContext'
 import './LearnMultiplication.css'
 
-const CORRECT_MESSAGES = ['Great!', 'Perfect!', 'Go on!', 'You are an expert!', 'You are amazing!', 'Wow!']
-function getRandomCorrectMessage() {
-  return CORRECT_MESSAGES[Math.floor(Math.random() * CORRECT_MESSAGES.length)]
+const CORRECT_MESSAGE_KEYS = ['learn.correctGreat', 'learn.correctPerfect', 'learn.correctGoOn', 'learn.correctExpert', 'learn.correctAmazing', 'learn.correctWow']
+function getRandomCorrectMessageKey() {
+  return CORRECT_MESSAGE_KEYS[Math.floor(Math.random() * CORRECT_MESSAGE_KEYS.length)]
 }
 
-function getAvatar(score) {
-  if (score >= 9) return { emoji: '😄', label: 'Amazing work!' }
-  if (score >= 7) return { emoji: '🙂', label: 'Great job!' }
-  if (score >= 5) return { emoji: '😐', label: 'Good effort!' }
-  return { emoji: '😢', label: 'Keep practicing!' }
+function getAvatarKeys(score) {
+  if (score >= 9) return { emoji: '😄', labelKey: 'learn.amazingWork' }
+  if (score >= 7) return { emoji: '🙂', labelKey: 'learn.greatJob' }
+  if (score >= 5) return { emoji: '😐', labelKey: 'learn.goodEffort' }
+  return { emoji: '😢', labelKey: 'learn.keepPracticing' }
 }
 
 function LearnMultiplication() {
   const navigate = useNavigate()
+  const { t } = useLanguage()
   const [selectedTable, setSelectedTable] = useState(null)
   const [questionIndex, setQuestionIndex] = useState(1)
   const [answer, setAnswer] = useState('')
@@ -133,7 +135,7 @@ function LearnMultiplication() {
       correctAnswer,
       factor1: questionIndex,
       factor2: selectedTable,
-      message: isCorrect ? getRandomCorrectMessage() : null,
+      messageKey: isCorrect ? getRandomCorrectMessageKey() : null,
     })
   }
 
@@ -165,10 +167,10 @@ function LearnMultiplication() {
       <div className="learn-page">
         <div className="learn-card">
           <button type="button" className="back-link" onClick={() => navigate('/participant-games')}>
-            ← Back to Games
+            {t('learn.back')}
           </button>
-          <h1 className="learn-title">Learn Multiplication Tables</h1>
-          <p className="learn-subtitle">Choose a multiplication table (1 to 10)</p>
+          <h1 className="learn-title">{t('learn.title')}</h1>
+          <p className="learn-subtitle">{t('learn.subtitle')}</p>
 
           <div className="table-grid">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((tableNumber) => (
@@ -197,8 +199,8 @@ function LearnMultiplication() {
           </div>
           <p className={`learn-feedback-message ${isCorrect ? 'correct' : 'wrong'}`}>
             {isCorrect
-              ? roundFeedback.message
-              : "Unfortunately that's wrong. Here's the correct answer:"}
+              ? t(roundFeedback.messageKey)
+              : t('learn.wrong')}
           </p>
           {!isCorrect && roundFeedback.factor1 != null && roundFeedback.factor2 != null && (
             <div className="mult-visual-wrap">
@@ -225,10 +227,10 @@ function LearnMultiplication() {
               </div>
             </div>
           )}
-          {isCorrect && <p className="learn-feedback-auto">Continuing...</p>}
+          {isCorrect && <p className="learn-feedback-auto">{t('learn.continuing')}</p>}
           {!isCorrect && (
             <button type="button" className="primary-btn" onClick={handleContinueAfterFeedback}>
-              Continue
+              {t('learn.continue')}
             </button>
           )}
         </div>
@@ -237,32 +239,32 @@ function LearnMultiplication() {
   }
 
   if (isFinished) {
-    const avatar = getAvatar(score)
+    const avatar = getAvatarKeys(score)
 
     return (
       <div className="learn-page">
         <div className="learn-card">
-          <h1 className="learn-title">Table of {selectedTable} Completed!</h1>
+          <h1 className="learn-title">{t('learn.tableOf')} {selectedTable} {t('learn.completed')}</h1>
           <p className="learn-subtitle">
-            Your score: <strong>{score}/10</strong>
+            {t('learn.yourScore')} <strong>{score}/10</strong>
           </p>
 
-          <div className="avatar-box" aria-label={`Performance avatar: ${avatar.label}`}>
+          <div className="avatar-box" aria-label={t(avatar.labelKey)}>
             <span className="avatar-emoji">{avatar.emoji}</span>
-            <p className="avatar-label">{avatar.label}</p>
+            <p className="avatar-label">{t(avatar.labelKey)}</p>
           </div>
 
-          {isSaving && <p className="status-text">Saving your score...</p>}
-          {saveError && <p className="error-text">Could not save score: {saveError}</p>}
+          {isSaving && <p className="status-text">{t('learn.savingScore')}</p>}
+          {saveError && <p className="error-text">{t('learn.couldNotSave')} {saveError}</p>}
 
-          <h2 className="leaderboard-title">Leaderboard (Table {selectedTable})</h2>
+          <h2 className="leaderboard-title">{t('learn.leaderboardTable', { table: selectedTable })}</h2>
           {topScores.length === 0 ? (
-            <p className="status-text">No scores yet for this table.</p>
+            <p className="status-text">{t('learn.noScoresYet')}</p>
           ) : (
             <ol className="leaderboard-list">
               {topScores.map((entry, index) => (
                 <li key={`${entry.user_id}-${entry.created_at}-${index}`}>
-                  <span>{entry.user_id === userId ? 'You' : `Player ${entry.user_id.slice(0, 6)}`}</span>
+                  <span>{entry.user_id === userId ? t('learn.you') : `${t('lb.player')} ${entry.user_id.slice(0, 6)}`}</span>
                   <strong>{entry.score}/10</strong>
                 </li>
               ))}
@@ -271,10 +273,10 @@ function LearnMultiplication() {
 
           <div className="finish-actions">
             <button type="button" className="primary-btn" onClick={handleRestart}>
-              Try Again
+              {t('learn.tryAgain')}
             </button>
             <button type="button" className="secondary-btn" onClick={() => setSelectedTable(null)}>
-              Choose Another Table
+              {t('learn.chooseAnother')}
             </button>
           </div>
         </div>
@@ -286,11 +288,11 @@ function LearnMultiplication() {
     <div className="learn-page">
       <div className="learn-card">
         <button type="button" className="back-link" onClick={() => setSelectedTable(null)}>
-          ← Back to Games
+          {t('learn.back')}
         </button>
-        <h1 className="learn-title">Table of {selectedTable}</h1>
+        <h1 className="learn-title">{t('learn.tableOf')} {selectedTable}</h1>
         <p className="learn-subtitle">
-          Question {questionIndex} of 10 • Current score: {score}
+          {t('learn.questionOf', { current: questionIndex })} • {t('learn.currentScore')} {score}
         </p>
 
         <form className="question-form" onSubmit={handleSubmitAnswer}>
@@ -312,7 +314,7 @@ function LearnMultiplication() {
               />
             </div>
             <button type="submit" className="primary-btn check-btn" disabled={answer.length === 0}>
-              Check
+              {t('learn.check')}
             </button>
           </div>
           <div className="keypad-wrap">

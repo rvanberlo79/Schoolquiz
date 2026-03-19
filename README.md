@@ -68,8 +68,16 @@ Create a `.env` file in the root directory:
 ```env
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-VITE_OPENAI_API_KEY=your_openai_api_key
 ```
+
+**Note:** Vite only reads `.env` when the dev server starts. If you change `.env`, restart the dev server (`Ctrl+C` then `npm run dev` again).
+
+For **AI Quiz Generation** (host creates quiz from an image with example questions), set the OpenAI API key in Supabase:
+
+1. In Supabase Dashboard go to **Project Settings → Edge Functions** (or **Secrets**).
+2. Add secret: `OPENAI_API_KEY` = your OpenAI API key.
+
+The Edge Function `generate-quiz-from-image` uses this to generate questions from the uploaded image. To verify the key is loaded: in Dashboard go to **Edge Functions → generate-quiz-from-image → Logs** and run a test; if the key is missing you’ll see an error in the logs.
 
 ### 5. Run the Development Server
 

@@ -1,25 +1,36 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useLanguage } from '../context/LanguageContext'
 import './HangmanMultiplication.css'
 
 const MAX_MISTAKES = 6
 const TARGET_SCORE = 15
 
-const CORRECT_MESSAGES = ['Great!', 'Perfect!', 'Go on!', 'You are an expert!', 'You are amazing!', 'Wow!']
-function getRandomCorrectMessage() {
-  return CORRECT_MESSAGES[Math.floor(Math.random() * CORRECT_MESSAGES.length)]
+const CORRECT_MESSAGE_KEYS = ['learn.correctGreat', 'learn.correctPerfect', 'learn.correctGoOn', 'learn.correctExpert', 'learn.correctAmazing', 'learn.correctWow']
+function getRandomCorrectMessageKey() {
+  return CORRECT_MESSAGE_KEYS[Math.floor(Math.random() * CORRECT_MESSAGE_KEYS.length)]
 }
 
-function getRandomQuestion(selectedTables) {
+function getRandomQuestion(selectedTables, previousQuestion = null) {
+  const maxTries = 100
+  for (let i = 0; i < maxTries; i++) {
+    const table = selectedTables[Math.floor(Math.random() * selectedTables.length)]
+    const multiplier = Math.floor(Math.random() * 10) + 1
+    const isSameAsPrevious = previousQuestion &&
+      multiplier === previousQuestion.multiplier &&
+      table === previousQuestion.table
+    if (!isSameAsPrevious) {
+      return {
+        multiplier,
+        table,
+        correctAnswer: multiplier * table,
+      }
+    }
+  }
   const table = selectedTables[Math.floor(Math.random() * selectedTables.length)]
   const multiplier = Math.floor(Math.random() * 10) + 1
-
-  return {
-    multiplier,
-    table,
-    correctAnswer: multiplier * table,
-  }
+  return { multiplier, table, correctAnswer: multiplier * table }
 }
 
 function HangmanFigure({ mistakes }) {
@@ -42,6 +53,7 @@ function HangmanFigure({ mistakes }) {
 
 function HangmanMultiplication() {
   const navigate = useNavigate()
+  const { t } = useLanguage()
   const [selectedTables, setSelectedTables] = useState([])
   const [isStarted, setIsStarted] = useState(false)
   const [question, setQuestion] = useState(null)
@@ -74,7 +86,7 @@ function HangmanMultiplication() {
       if (!uid) return
       const { data: profile } = await supabase.from('profiles').select('nickname').eq('id', uid).single()
       const nick = profile?.nickname?.trim() || localStorage.getItem(`leaderboard_nickname_${uid}`) || ''
-      setNickname(nick || 'Player')
+      setNickname(nick || t('lb.player'))
     }
     loadUserAndNickname()
   }, [])
@@ -163,7 +175,7 @@ function HangmanMultiplication() {
       correctAnswer: question.correctAnswer,
       factor1: question.multiplier,
       factor2: question.table,
-      message: isCorrect ? getRandomCorrectMessage() : null,
+      messageKey: isCorrect ? getRandomCorrectMessageKey() : null,
     })
   }
 
@@ -197,7 +209,7 @@ function HangmanMultiplication() {
       return
     }
 
-    setQuestion(getRandomQuestion(selectedTables))
+    setQuestion(getRandomQuestion(selectedTables, question))
   }
 
   if (!isStarted) {
@@ -205,10 +217,10 @@ function HangmanMultiplication() {
       <div className="hangman-page">
         <div className="hangman-card">
           <button type="button" className="hangman-back" onClick={() => navigate('/participant-games')}>
-            ← Back to Games
+            {t('hangman.back')}
           </button>
-          <h1 className="hangman-title">Multiplication Hangman Game</h1>
-          <p className="hangman-subtitle">Select one or more tables (1 to 10)</p>
+          <h1 className="hangman-title">{t('hangman.title')}</h1>
+          <p className="hangman-subtitle">{t('hangman.subtitle')}</p>
 
           <div className="table-selector-grid">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
@@ -227,11 +239,11 @@ function HangmanMultiplication() {
           </div>
 
           <p className="selected-info">
-            Selected tables: {selectedTables.length > 0 ? selectedTables.join(', ') : 'none'}
+            {t('hangman.selected')} {selectedTables.length > 0 ? selectedTables.join(', ') : t('hangman.none')}
           </p>
 
           <button type="button" className="start-btn" disabled={!canStart} onClick={startGame}>
-            Start Hangman Game
+            {t('hangman.start')}
           </button>
         </div>
       </div>
@@ -248,8 +260,8 @@ function HangmanMultiplication() {
           </div>
           <p className={`hangman-feedback-message ${isCorrect ? 'correct' : 'wrong'}`}>
             {isCorrect
-              ? roundFeedback.message
-              : "Unfortunately that's wrong. Here's the correct answer:"}
+              ? t(roundFeedback.messageKey)
+              : t('hangman.wrong')}
           </p>
           {!isCorrect && roundFeedback.factor1 != null && roundFeedback.factor2 != null && (
             <div className="mult-visual-wrap">
@@ -276,10 +288,10 @@ function HangmanMultiplication() {
               </div>
             </div>
           )}
-          {isCorrect && <p className="hangman-feedback-auto">Continuing...</p>}
+          {isCorrect && <p className="hangman-feedback-auto">{t('hangman.continuing')}</p>}
           {!isCorrect && (
             <button type="button" className="start-btn" onClick={handleContinueAfterFeedback}>
-              Continue
+              {t('hangman.continue')}
             </button>
           )}
         </div>
@@ -291,31 +303,31 @@ function HangmanMultiplication() {
     return (
       <div className="hangman-page">
         <div className="hangman-card">
-          <h1 className="hangman-title">{didWin ? 'You Won!' : 'Game Over'}</h1>
+          <h1 className="hangman-title">{didWin ? t('hangman.youWon') : t('hangman.gameOver')}</h1>
           <p className="hangman-subtitle">
-            Final score: {score} points • Mistakes: {mistakes}/{MAX_MISTAKES}
+            {t('hangman.finalScore')} {score} points • {t('hangman.mistakes')} {mistakes}/{MAX_MISTAKES}
           </p>
 
-          <div className="result-avatar" aria-label={didWin ? 'Happy avatar' : 'Unhappy avatar'}>
+          <div className="result-avatar" aria-label={didWin ? t('hangman.youWon') : t('hangman.gameOver')}>
             {didWin ? '😄' : '😟'}
           </div>
           <p className="result-text">
             {didWin
-              ? `${nickname || 'You'} has beaten the hangman game and is a professional!`
-              : 'The hangman is complete. Better luck next time!'}
+              ? t('hangman.wonMessage', { name: nickname || t('learn.you') })
+              : t('hangman.lostMessage')}
           </p>
-          {isSaving && <p className="result-status">Saving your score...</p>}
-          {saveError && <p className="result-error">Could not save score: {saveError}</p>}
+          {isSaving && <p className="result-status">{t('hangman.savingScore')}</p>}
+          {saveError && <p className="result-error">{t('hangman.couldNotSave')} {saveError}</p>}
 
           <div className="result-actions">
             <button type="button" className="secondary-btn" onClick={() => navigate('/leaderboard')}>
-              Go to Overall Leaderboard
+              {t('hangman.goToLeaderboard')}
             </button>
             <button type="button" className="start-btn" onClick={repeatGame}>
-              Repeat Hangman Game
+              {t('hangman.repeat')}
             </button>
             <button type="button" className="secondary-btn" onClick={() => navigate('/participant-games')}>
-              Back to Games Menu
+              {t('hangman.backToGames')}
             </button>
           </div>
         </div>
@@ -326,16 +338,16 @@ function HangmanMultiplication() {
   return (
     <div className="hangman-page">
       <div className="hangman-card">
-        <h1 className="hangman-title">Multiplication Hangman Game</h1>
+        <h1 className="hangman-title">{t('hangman.title')}</h1>
         <p className="hangman-subtitle">
-          Score: {score} • Mistakes: {mistakes}/{MAX_MISTAKES}
+          {t('hangman.score')}: {score} • {t('hangman.mistakes')} {mistakes}/{MAX_MISTAKES}
         </p>
 
         <HangmanFigure mistakes={mistakes} />
 
         <form className="hangman-form" onSubmit={submitAnswer}>
           <label htmlFor="hangman-answer" className="question-label">
-            What is {prompt}?
+            {t('hangman.whatIs')} {prompt}?
           </label>
           <input
             id="hangman-answer"
@@ -347,7 +359,7 @@ function HangmanMultiplication() {
             autoFocus
           />
           <button type="submit" className="start-btn">
-            Submit Answer
+            {t('hangman.submitAnswer')}
           </button>
         </form>
 

@@ -1,0 +1,362 @@
+.host-quiz-ai-page {
+  min-height: 100vh;
+  background: #ffffff;
+  padding: 24px 20px 40px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.host-quiz-ai-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: #4f7cff;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 0 20px;
+  margin: 0;
+  transition: color 0.15s ease;
+}
+
+.host-quiz-ai-back:hover {
+  color: #3d62e0;
+  text-decoration: underline;
+}
+
+.host-quiz-ai-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.host-quiz-ai-header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+  color: #fff;
+}
+
+.host-quiz-ai-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2a3143;
+  margin: 0;
+}
+
+.host-quiz-ai-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.host-quiz-ai-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.host-quiz-ai-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2a3143;
+}
+
+.host-quiz-ai-file-input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.host-quiz-ai-upload-btn {
+  padding: 12px 20px;
+  border: 2px dashed #c4b5fd;
+  border-radius: 10px;
+  background: #faf5ff;
+  color: #6d28d9;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.host-quiz-ai-upload-btn:hover {
+  background: #f3e8ff;
+  border-color: #8b5cf6;
+}
+
+.host-quiz-ai-preview-wrap {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.host-quiz-ai-preview {
+  display: block;
+  max-width: 100%;
+  max-height: 240px;
+  object-fit: contain;
+  border-radius: 10px;
+  border: 1px solid #e9ecef;
+}
+
+.host-quiz-ai-remove-image {
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: #fee2e2;
+  color: #b91c1c;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.host-quiz-ai-remove-image:hover {
+  background: #fecaca;
+}
+
+.host-quiz-ai-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #e4e7ef;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+}
+
+.host-quiz-ai-textarea:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+
+.host-quiz-ai-textarea::placeholder {
+  color: #9ca3af;
+}
+
+.host-quiz-ai-hint {
+  font-size: 12px;
+  color: #6f7688;
+  margin: 0;
+}
+
+.host-quiz-ai-settings {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.host-quiz-ai-select,
+.host-quiz-ai-input {
+  padding: 10px 12px;
+  border: 1px solid #e4e7ef;
+  border-radius: 8px;
+  font-size: 14px;
+  width: 100%;
+}
+
+.host-quiz-ai-select:focus,
+.host-quiz-ai-input:focus {
+  outline: none;
+  border-color: #8b5cf6;
+}
+
+.host-quiz-ai-error {
+  padding: 12px 14px;
+  background: #fee2e2;
+  color: #b91c1c;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.host-quiz-ai-generate-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #8b5cf6 0%, #c084fc 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  align-self: center;
+}
+
+.host-quiz-ai-generate-btn:hover:not(:disabled) {
+  opacity: 0.95;
+  transform: translateY(-1px);
+}
+
+.host-quiz-ai-generate-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.host-quiz-ai-btn-icon {
+  display: flex;
+}
+
+.host-quiz-ai-results {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e4e7ef;
+}
+
+.host-quiz-ai-results-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2a3143;
+  margin: 0 0 16px;
+}
+
+.host-quiz-ai-questions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+}
+
+.host-quiz-ai-question-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
+  color: #374151;
+}
+
+.host-quiz-ai-question-item:last-child {
+  border-bottom: none;
+}
+
+.host-quiz-ai-answers {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.host-quiz-ai-correct {
+  background: #d1fae5;
+  color: #065f46;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.host-quiz-ai-wrong {
+  background: #f3f4f6;
+  color: #6b7280;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.host-quiz-ai-save-btn,
+.host-quiz-ai-publish-btn {
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.2s;
+}
+
+.host-quiz-ai-save-btn {
+  background: #4f7cff;
+  color: #fff;
+}
+
+.host-quiz-ai-save-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.host-quiz-ai-save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.host-quiz-ai-publish-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.host-quiz-ai-saved-msg {
+  font-size: 14px;
+  color: #059669;
+}
+
+.host-quiz-ai-publish-btn {
+  background: linear-gradient(135deg, #8b5cf6 0%, #c084fc 100%);
+  color: #fff;
+}
+
+.host-quiz-ai-publish-btn:hover:not(:disabled) {
+  opacity: 0.95;
+}
+
+.host-quiz-ai-publish-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.host-quiz-ai-published-msg {
+  font-size: 14px;
+  color: #059669;
+  font-weight: 500;
+  margin: 0;
+}
+
+.host-quiz-ai-tips {
+  margin-top: 32px;
+  padding: 20px;
+  background: linear-gradient(160deg, #f5f3ff 0%, #faf5ff 100%);
+  border-radius: 12px;
+  border: 1px solid #e9d5ff;
+}
+
+.host-quiz-ai-tips-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #2a3143;
+  margin: 0 0 12px;
+}
+
+.host-quiz-ai-tips-icon {
+  font-size: 20px;
+}
+
+.host-quiz-ai-tips-list {
+  margin: 0;
+  padding-left: 20px;
+  color: #5f6678;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.host-quiz-ai-tips-list li {
+  margin-bottom: 4px;
+}
+
+@media (max-width: 640px) {
+  .host-quiz-ai-settings {
+    grid-template-columns: 1fr;
+  }
+}

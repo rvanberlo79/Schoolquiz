@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router-dom'
+import { useLanguage } from '../context/LanguageContext'
 import './ParticipantHome.css'
 
 function ParticipantHome() {
   const navigate = useNavigate()
+  const { t } = useLanguage()
 
   return (
     <div className="participant-home-page">
@@ -12,10 +14,10 @@ function ParticipantHome() {
           className="participant-home-back"
           onClick={() => navigate('/role-selection')}
         >
-          ← Back to role selection
+          {t('phome.back')}
         </button>
-        <h1 className="participant-home-title">Participant</h1>
-        <p className="participant-home-subtitle">What would you like to do?</p>
+        <h1 className="participant-home-title">{t('phome.title')}</h1>
+        <p className="participant-home-subtitle">{t('phome.subtitle')}</p>
 
         <div className="participant-home-options">
           <button
@@ -24,8 +26,8 @@ function ParticipantHome() {
             onClick={() => navigate('/participant-games')}
           >
             <span className="participant-home-icon">🎮</span>
-            <span className="participant-home-label">Choose a New Game</span>
-            <span className="participant-home-desc">Play learning games and practice</span>
+            <span className="participant-home-label">{t('phome.chooseGame')}</span>
+            <span className="participant-home-desc">{t('phome.chooseGameDesc')}</span>
           </button>
 
           <button
@@ -34,8 +36,8 @@ function ParticipantHome() {
             onClick={() => navigate('/leaderboard')}
           >
             <span className="participant-home-icon">🏆</span>
-            <span className="participant-home-label">Overall Leaderboard</span>
-            <span className="participant-home-desc">See how you rank against others</span>
+            <span className="participant-home-label">{t('phome.leaderboard')}</span>
+            <span className="participant-home-desc">{t('phome.leaderboardDesc')}</span>
           </button>
 
           <button
@@ -44,8 +46,8 @@ function ParticipantHome() {
             onClick={() => navigate('/settings')}
           >
             <span className="participant-home-icon">⚙️</span>
-            <span className="participant-home-label">User Settings</span>
-            <span className="participant-home-desc">Set your nickname for the leaderboard</span>
+            <span className="participant-home-label">{t('phome.settings')}</span>
+            <span className="participant-home-desc">{t('phome.settingsDesc')}</span>
           </button>
         </div>
       </div>

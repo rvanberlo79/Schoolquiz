@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { useLanguage } from '../context/LanguageContext'
 import './Leaderboard.css'
 
 const AVATAR_URLS = ['/avatars/avatar-0.png', '/avatars/avatar-1.png', '/avatars/avatar-2.png']
@@ -16,6 +17,7 @@ function PodiumAvatar({ avatarIndex }) {
 
 function Leaderboard() {
   const navigate = useNavigate()
+  const { t } = useLanguage()
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -71,7 +73,7 @@ function Leaderboard() {
           .filter(([userId]) => userId != null)
           .map(([userId, total]) => ({
             userId,
-            displayName: profileMap[userId] || 'Player',
+            displayName: profileMap[userId] || t('lb.player'),
             avatar: avatarMap[userId] ?? null,
             total,
           }))
@@ -85,7 +87,7 @@ function Leaderboard() {
       setLoading(false)
     }
     load()
-  }, [])
+  }, [t])
 
   return (
     <div className="leaderboard-page">
@@ -95,18 +97,18 @@ function Leaderboard() {
           className="leaderboard-back"
           onClick={() => navigate('/participant')}
         >
-          ← Back to Participant
+          {t('lb.back')}
         </button>
-        <h1 className="leaderboard-title">Overall Leaderboard</h1>
-        <p className="leaderboard-subtitle">Total points from all games</p>
+        <h1 className="leaderboard-title">{t('lb.title')}</h1>
+        <p className="leaderboard-subtitle">{t('lb.subtitle')}</p>
 
-        {loading && <p className="leaderboard-loading">Loading…</p>}
+        {loading && <p className="leaderboard-loading">{t('lb.loading')}</p>}
         {error && <p className="leaderboard-error">{error}</p>}
 
         {!loading && !error && (
           <>
             {entries.length === 0 ? (
-              <p className="leaderboard-empty">No scores yet. Play games to appear here!</p>
+              <p className="leaderboard-empty">{t('lb.empty')}</p>
             ) : (
               <>
                 {entries.length >= 3 && (
@@ -116,7 +118,7 @@ function Leaderboard() {
                       <PodiumAvatar avatarIndex={entries[1].avatar} />
                       <div className="leaderboard-podium-block">
                         <span className="leaderboard-podium-name">{entries[1].displayName}</span>
-                        <span className="leaderboard-podium-points">{entries[1].total} pts</span>
+                        <span className="leaderboard-podium-points">{entries[1].total} {t('lb.pts')}</span>
                       </div>
                     </div>
                     <div className="leaderboard-podium-place leaderboard-podium-1">
@@ -124,7 +126,7 @@ function Leaderboard() {
                       <PodiumAvatar avatarIndex={entries[0].avatar} />
                       <div className="leaderboard-podium-block">
                         <span className="leaderboard-podium-name">{entries[0].displayName}</span>
-                        <span className="leaderboard-podium-points">{entries[0].total} pts</span>
+                        <span className="leaderboard-podium-points">{entries[0].total} {t('lb.pts')}</span>
                       </div>
                     </div>
                     <div className="leaderboard-podium-place leaderboard-podium-3">
@@ -132,7 +134,7 @@ function Leaderboard() {
                       <PodiumAvatar avatarIndex={entries[2].avatar} />
                       <div className="leaderboard-podium-block">
                         <span className="leaderboard-podium-name">{entries[2].displayName}</span>
-                        <span className="leaderboard-podium-points">{entries[2].total} pts</span>
+                        <span className="leaderboard-podium-points">{entries[2].total} {t('lb.pts')}</span>
                       </div>
                     </div>
                   </div>
@@ -145,7 +147,7 @@ function Leaderboard() {
                         <PodiumAvatar avatarIndex={e.avatar} />
                         <div className="leaderboard-podium-block">
                           <span className="leaderboard-podium-name">{e.displayName}</span>
-                          <span className="leaderboard-podium-points">{e.total} pts</span>
+                          <span className="leaderboard-podium-points">{e.total} {t('lb.pts')}</span>
                         </div>
                       </div>
                     ))}
@@ -156,8 +158,8 @@ function Leaderboard() {
                     <thead>
                       <tr>
                         <th>#</th>
-                        <th>Name</th>
-                        <th>Points</th>
+                        <th>{t('lb.name')}</th>
+                        <th>{t('lb.points')}</th>
                       </tr>
                     </thead>
                     <tbody>

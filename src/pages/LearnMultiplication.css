@@ -89,30 +89,30 @@
   max-width: 140px;
   font-size: 28px;
   font-weight: 700;
-  background: #0d9488;
+  background: #7c3aed;
   border: none;
-  color: #fef08a;
+  color: #fff;
   border-radius: 10px;
   padding: 12px 16px;
 }
 
 .answer-display::placeholder {
-  color: rgba(254, 240, 138, 0.5);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .answer-display:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.4);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.5);
 }
 
 .check-btn {
-  background: #0d9488;
+  background: #7c3aed;
   padding: 12px 24px;
   font-size: 18px;
 }
 
 .check-btn:hover:not(:disabled) {
-  background: #0f766e;
+  background: #6d28d9;
 }
 
 .check-btn:disabled {
@@ -147,7 +147,7 @@
   height: 52px;
   border: none;
   border-radius: 10px;
-  background: #0d9488;
+  background: #7c3aed;
   color: #fff;
   font-size: 22px;
   font-weight: 700;
@@ -156,7 +156,7 @@
 }
 
 .keypad-btn:hover {
-  background: #0f766e;
+  background: #6d28d9;
 }
 
 .keypad-btn:active {
@@ -164,12 +164,12 @@
 }
 
 .keypad-btn-active {
-  background: #fef08a;
-  color: #1f2937;
+  background: #a78bfa;
+  color: #fff;
 }
 
 .keypad-btn-active:hover {
-  background: #fde047;
+  background: #8b5cf6;
 }
 
 .keypad-backspace {
