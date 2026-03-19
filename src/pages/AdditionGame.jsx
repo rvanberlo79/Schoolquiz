@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
+import { useLanguage } from '../context/LanguageContext'
+import { useProfile } from '../hooks/useProfile'
 import './AdditionGame.css'
 
-const TARGET_SCORE = 5
+const QUESTIONS_TOTAL = 10
 const ROCK_SLOTS_Y = [22, 37, 52, 67] // percent of container height
 const ROCK_START_X = 8
 const TANK_X = 82
@@ -18,15 +21,32 @@ function shuffle(arr) {
   return a
 }
 
-function generateQuestion() {
-  const a = Math.floor(Math.random() * 12) + 1
-  const b = Math.floor(Math.random() * 12) + 1
+/**
+ * Generate A + B with sum ≤ 100. A is always in [0, 95].
+ * Difficulty: beginner B in [0, 9]; experienced B in [0, 29] with B < A; professional B in [0, 95].
+ */
+function generateQuestion(difficulty = 'beginner') {
+  // A in [0, 95]; for experienced we need A ≥ 1 so that B < A is possible
+  const a = difficulty === 'experienced'
+    ? Math.floor(Math.random() * 95) + 1   // [1, 95]
+    : Math.floor(Math.random() * 96)       // [0, 95]
+
+  let bMax
+  if (difficulty === 'beginner') {
+    bMax = Math.min(9, 100 - a)
+  } else if (difficulty === 'experienced') {
+    bMax = Math.min(29, a - 1, 100 - a)   // B < A and A + B ≤ 100
+  } else {
+    bMax = Math.min(95, 100 - a)          // professional
+  }
+  const b = bMax < 0 ? 0 : Math.floor(Math.random() * (bMax + 1))
+
   const correct = a + b
   const wrongs = new Set()
   while (wrongs.size < 3) {
     const offset = (Math.floor(Math.random() * 7) - 3) || 1
     const w = correct + offset
-    if (w >= 0 && w !== correct) wrongs.add(w)
+    if (w >= 0 && w <= 100 && w !== correct) wrongs.add(w)
   }
   const options = shuffle([correct, ...Array.from(wrongs)])
   return { a, b, correct, options }
@@ -80,34 +100,51 @@ function renderRowWithFivesSeparators(squaresCount, circlesCount, keyPrefix) {
 
 function AdditionGame() {
   const navigate = useNavigate()
+  const { t } = useLanguage()
+  const { profile, loading: profileLoading } = useProfile()
+  const difficulty = profile?.difficulty_level ?? 'beginner'
   const containerRef = useRef(null)
   const [score, setScore] = useState(0)
-  const [gameState, setGameState] = useState('playing') // 'playing' | 'won' | 'lost'
-  const initialQ = useRef(null)
-  if (initialQ.current === null) initialQ.current = generateQuestion()
-  const [question, setQuestion] = useState(initialQ.current)
-  const [rocks, setRocks] = useState(() =>
-    initialQ.current.options.map((value, id) => ({
-      id,
-      value,
-      x: ROCK_START_X,
-      y: ROCK_SLOTS_Y[id],
-      exploded: false,
-    }))
-  )
+  const [roundsCompleted, setRoundsCompleted] = useState(0) // 0..9 while playing; after 10th we go to finished
+  const [gameState, setGameState] = useState('playing') // 'playing' | 'finished'
+  const [finalScore, setFinalScore] = useState(0) // stored when game ends for result screen
+  const [saveError, setSaveError] = useState('')
+  const [question, setQuestion] = useState(null)
+  const [rocks, setRocks] = useState([])
   const [tankY, setTankY] = useState(50)
   const [explosion, setExplosion] = useState(null) // null | 'rock' | 'tank'
+  const [explosionPosition, setExplosionPosition] = useState(null) // { x, y } in percent
   const [roundBlocked, setRoundBlocked] = useState(false)
   const [showFeedback, setShowFeedback] = useState(false)
   const [feedbackData, setFeedbackData] = useState(null) // { a, b, correct, answerGiven, result: 'correct'|'wrong'|'too_late' }
   const mouseYRef = useRef(50)
+  const tankYRef = useRef(50)
   const questionRef = useRef(question)
   useEffect(() => {
     questionRef.current = question
   }, [question])
+  useEffect(() => {
+    tankYRef.current = tankY
+  }, [tankY])
+
+  // Generate first question once profile (difficulty) is loaded
+  useEffect(() => {
+    if (profileLoading || question !== null) return
+    const q = generateQuestion(difficulty)
+    setQuestion(q)
+    setRocks(
+      q.options.map((value, id) => ({
+        id,
+        value,
+        x: ROCK_START_X,
+        y: ROCK_SLOTS_Y[id],
+        exploded: false,
+      }))
+    )
+  }, [profileLoading, difficulty, question])
 
   const startNewRound = useCallback(() => {
-    const q = generateQuestion()
+    const q = generateQuestion(difficulty)
     setQuestion(q)
     setRocks(
       q.options.map((value, id) => ({
@@ -119,8 +156,9 @@ function AdditionGame() {
       }))
     )
     setExplosion(null)
+    setExplosionPosition(null)
     setRoundBlocked(false)
-  }, [])
+  }, [difficulty])
 
   // Mouse move: update tank Y (percent). Re-attach when arena is visible (e.g. after feedback).
   useEffect(() => {
@@ -131,8 +169,10 @@ function AdditionGame() {
     const onMove = (e) => {
       const rect = el.getBoundingClientRect()
       const y = ((e.clientY - rect.top) / rect.height) * 100
-      mouseYRef.current = Math.max(5, Math.min(95, y))
-      setTankY(mouseYRef.current)
+      const clamped = Math.max(5, Math.min(95, y))
+      mouseYRef.current = clamped
+      tankYRef.current = clamped
+      setTankY(clamped)
     }
 
     el.addEventListener('mousemove', onMove)
@@ -142,7 +182,7 @@ function AdditionGame() {
   // Click: fire at aimed rock
   useEffect(() => {
     const el = containerRef.current
-    if (!el) return
+    if (!el || !question) return
 
     const onClick = () => {
       if (gameState !== 'playing' || roundBlocked) return
@@ -171,6 +211,7 @@ function AdditionGame() {
 
       if (aimedRock.value === question.correct) {
         setExplosion('rock')
+        setExplosionPosition({ x: aimedRock.x, y: aimedRock.y })
         setScore((s) => s + 1)
         setRocks((prev) =>
           prev.map((r) => (r.id === aimedIndex ? { ...r, exploded: true } : r))
@@ -184,7 +225,7 @@ function AdditionGame() {
         })
       } else {
         setExplosion('tank')
-        setScore((s) => Math.max(-10, s - 1))
+        setExplosionPosition({ x: TANK_X, y: tankY })
         setFeedbackData({
           a: question.a,
           b: question.b,
@@ -199,7 +240,7 @@ function AdditionGame() {
 
     el.addEventListener('click', onClick)
     return () => el.removeEventListener('click', onClick)
-  }, [showFeedback, gameState, roundBlocked, question.correct, rocks, startNewRound])
+  }, [showFeedback, gameState, roundBlocked, question, rocks, startNewRound])
 
   // Animation: move rocks right; check rock hits tank
   useEffect(() => {
@@ -214,7 +255,7 @@ function AdditionGame() {
         if (anyHit) {
           setRoundBlocked(true)
           setExplosion('tank')
-          setScore((s) => Math.max(-10, s - 1))
+          setExplosionPosition({ x: TANK_X, y: tankYRef.current })
           const q = questionRef.current
           if (q) {
             setFeedbackData({
@@ -235,16 +276,42 @@ function AdditionGame() {
     return () => clearInterval(id)
   }, [gameState, roundBlocked, startNewRound])
 
-  // Check win
-  useEffect(() => {
-    if (score >= TARGET_SCORE) setGameState('won')
-  }, [score])
-
-  const handleContinueFromFeedback = useCallback(() => {
+  const handleContinueFromFeedback = useCallback(async () => {
+    const nextCompleted = roundsCompleted + 1
     setShowFeedback(false)
     setFeedbackData(null)
+
+    if (nextCompleted >= QUESTIONS_TOTAL) {
+      // Include 10th question: score may already have it (state update) or not (batching). Clamp to 0-10.
+      const withTenth = score + (feedbackData?.result === 'correct' ? 1 : 0)
+      const total = Math.min(QUESTIONS_TOTAL, Math.max(0, withTenth))
+      setFinalScore(total)
+      setGameState('finished')
+      setSaveError('')
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user?.id) {
+        const { error } = await supabase.from('addition_scores').insert({
+          user_id: user.id,
+          score: total,
+          total_questions: QUESTIONS_TOTAL,
+        })
+        if (error) setSaveError(error.message)
+      }
+      return
+    }
+    setRoundsCompleted(nextCompleted)
     startNewRound()
-  }, [startNewRound])
+  }, [startNewRound, roundsCompleted, score, feedbackData?.result])
+
+  if (profileLoading || question === null) {
+    return (
+      <div className="addition-game-page">
+        <div className="addition-game-card addition-game-result">
+          <p className="addition-game-subtitle">{t('settings.loading')}</p>
+        </div>
+      </div>
+    )
+  }
 
   if (showFeedback && feedbackData) {
     const { a, b, correct, answerGiven, result } = feedbackData
@@ -259,7 +326,7 @@ function AdditionGame() {
             className="addition-game-back"
             onClick={() => navigate('/participant-games')}
           >
-            ← Back to Games
+            {t('add.back')}
           </button>
           <div className="addition-feedback-problem">{a} + {b} ?</div>
 
@@ -275,15 +342,9 @@ function AdditionGame() {
           </div>
 
           <p className="addition-feedback-text">
-            {isCorrect && (
-              <>You gave the answer {correct}. You had the answer right!</>
-            )}
-            {result === 'wrong' && (
-              <>You gave the answer {answerGiven}. The right answer is {correct}. Good try, keep on trying.</>
-            )}
-            {result === 'too_late' && (
-              <>You were too late. The right answer is {correct}. Good try, keep on trying.</>
-            )}
+            {isCorrect && t('add.youGaveCorrect', { correct })}
+            {result === 'wrong' && t('add.youGaveWrong', { answer: answerGiven, correct })}
+            {result === 'too_late' && t('add.tooLate', { correct })}
           </p>
 
           <div className="addition-feedback-avatar" aria-hidden="true">
@@ -299,14 +360,14 @@ function AdditionGame() {
             className="addition-game-btn addition-feedback-continue"
             onClick={handleContinueFromFeedback}
           >
-            Continue
+            {t('add.continue')}
           </button>
         </div>
       </div>
     )
   }
 
-  if (gameState === 'won') {
+  if (gameState === 'finished') {
     return (
       <div className="addition-game-page">
         <div className="addition-game-card addition-game-result">
@@ -315,12 +376,13 @@ function AdditionGame() {
             className="addition-game-back"
             onClick={() => navigate('/participant-games')}
           >
-            ← Back to Games
+            {t('add.back')}
           </button>
-          <h1 className="addition-game-title">You won!</h1>
+          <h1 className="addition-game-title">{t('add.gameComplete')}</h1>
           <p className="addition-game-subtitle">
-            You reached {TARGET_SCORE} points. Great job!
+            {t('add.youGot', { score: finalScore, total: QUESTIONS_TOTAL })} {finalScore >= 7 ? t('add.greatJob') : t('add.keepPractising')}
           </p>
+          {saveError && <p className="addition-game-error">{saveError}</p>}
           <div className="result-avatar">😄</div>
           <div className="result-actions">
             <button
@@ -328,18 +390,21 @@ function AdditionGame() {
               className="addition-game-btn"
               onClick={() => {
                 setScore(0)
+                setRoundsCompleted(0)
                 setGameState('playing')
+                setFeedbackData(null)
+                setFinalScore(0)
                 startNewRound()
               }}
             >
-              Play Again
+              {t('add.playAgain')}
             </button>
             <button
               type="button"
               className="addition-game-btn secondary"
               onClick={() => navigate('/participant-games')}
             >
-              Back to Games Menu
+              {t('add.backToMenu')}
             </button>
           </div>
         </div>
@@ -354,14 +419,14 @@ function AdditionGame() {
         className="addition-game-back-fixed"
         onClick={() => navigate('/participant-games')}
       >
-        ← Back to Games
+        {t('add.back')}
       </button>
 
       <div className="addition-game-question-bar">
         {question.a} + {question.b}?
       </div>
 
-      <div className="addition-game-score">Score: {score} / {TARGET_SCORE}</div>
+      <div className="addition-game-score">{t('add.score')}: {score} / {QUESTIONS_TOTAL} — {t('add.question')} {roundsCompleted + 1} {t('add.of')} {QUESTIONS_TOTAL}</div>
 
       <div className="addition-game-arena" ref={containerRef}>
         <div className="addition-rocks">
@@ -393,14 +458,21 @@ function AdditionGame() {
         </div>
 
         {explosion && (
-          <div className={`addition-explosion ${explosion}`}>
-            {explosion === 'rock' ? '💥' : '💥'}
+          <div
+            className={`addition-explosion ${explosion}`}
+            style={
+              explosionPosition
+                ? { left: `${explosionPosition.x}%`, top: `${explosionPosition.y}%` }
+                : undefined
+            }
+          >
+            💥
           </div>
         )}
       </div>
 
       <p className="addition-game-hint">
-        Move the tank with your mouse and click to shoot the rock with the correct answer. Reach {TARGET_SCORE} points to win. If a rock reaches the tank, you lose a point!
+        {t('add.hint', { total: QUESTIONS_TOTAL })}
       </p>
     </div>
   )

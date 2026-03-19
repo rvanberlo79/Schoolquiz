@@ -10,6 +10,12 @@ export const supabase = createClient(
   supabaseAnonKey || 'placeholder-key'
 )
 
+/** Base URL for Supabase API (e.g. for Edge Function calls where we need to read error body). */
+export const getSupabaseUrl = () => supabaseUrl?.trim() ? supabaseUrl.replace(/\/$/, '') : ''
+
+/** Anon key for Edge Function requests (apikey header). Required by Supabase gateway with user JWT. */
+export const getSupabaseAnonKey = () => supabaseAnonKey?.trim() || ''
+
 // Helper to check if Supabase is configured
 export const isSupabaseConfigured = () => {
   return !!(supabaseUrl && supabaseAnonKey && 

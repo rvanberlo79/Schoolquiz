@@ -9,7 +9,7 @@
 
 .settings-card {
   width: 100%;
-  max-width: 440px;
+  max-width: 480px;
   background: #fff;
   border-radius: 16px;
   padding: 28px;
@@ -44,6 +44,46 @@
   text-align: center;
 }
 
+.settings-role-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.settings-role-value {
+  font-weight: 600;
+  color: #374151;
+  font-size: 15px;
+}
+
+.settings-role-hint {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.settings-manage-link-wrap {
+  margin-bottom: 16px;
+}
+
+.settings-manage-link {
+  background: transparent;
+  border: none;
+  color: #4f46e5;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.settings-manage-link:hover {
+  color: #4338ca;
+}
+
 .settings-form {
   display: flex;
   flex-direction: column;
@@ -65,6 +105,22 @@
 }
 
 .settings-input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+}
+
+.settings-select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 16px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.settings-select:focus {
   outline: none;
   border-color: #4f46e5;
   box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
@@ -103,4 +159,40 @@
 .settings-loading {
   text-align: center;
   color: #6b7280;
+}
+
+/* Avatar row: 3 options */
+.settings-avatar-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.settings-avatar-cell {
+  width: 80px;
+  height: 80px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 0;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.settings-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.settings-avatar-cell:hover {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.25);
+}
+
+.settings-avatar-cell-selected {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.4);
 }

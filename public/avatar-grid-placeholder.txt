@@ -1,0 +1,1 @@
+Avatar images are in public/avatars/ (avatar-0.png, avatar-1.png, avatar-2.png). This placeholder can be removed.
